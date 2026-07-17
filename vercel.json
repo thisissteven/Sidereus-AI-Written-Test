@@ -1,28 +1,17 @@
 {
-	"services": {
-		"frontend": {
-			"root": "frontend",
-			"framework": "vite"
-		},
-		"backend": {
-			"root": "backend",
-			"entrypoint": "api/index.py"
-		}
-	},
 	"rewrites": [
 		{
-			"source": "/api(/.*)?",
-			"destination": {
-				"type": "service",
-				"service": "backend"
-			}
+			"source": "/api/(.*)",
+			"destination": "/api/index.py"
 		},
 		{
 			"source": "/(.*)",
-			"destination": {
-				"type": "service",
-				"service": "frontend"
-			}
+			"destination": "/frontend/$1"
 		}
-	]
+	],
+	"functions": {
+		"api/index.py": {
+			"runtime": "python3.12"
+		}
+	}
 }
