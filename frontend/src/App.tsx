@@ -1,26 +1,29 @@
 import { FileSearch, Braces, DatabaseZap } from "lucide-react"
 import { SiteHeader } from "@/modules/site-header"
 import { ResumeAnalyzer } from "@/modules/resume-analyzer"
-
-const FEATURES = [
-  {
-    icon: FileSearch,
-    title: "PDF parsing",
-    desc: "Multi-page resumes cleaned and structured for extraction.",
-  },
-  {
-    icon: Braces,
-    title: "AI extraction",
-    desc: "Key fields pulled into structured JSON automatically.",
-  },
-  {
-    icon: DatabaseZap,
-    title: "Cached scoring",
-    desc: "Redis-backed match scores avoid recomputing candidates.",
-  },
-]
+import { useI18n } from "@/lib/i18n"
 
 export default function App() {
+  const { t } = useI18n()
+
+  const features = [
+    {
+      icon: FileSearch,
+      title: t("feature.pdf.title"),
+      desc: t("feature.pdf.desc"),
+    },
+    {
+      icon: Braces,
+      title: t("feature.ai.title"),
+      desc: t("feature.ai.desc"),
+    },
+    {
+      icon: DatabaseZap,
+      title: t("feature.cache.title"),
+      desc: t("feature.cache.desc"),
+    },
+  ]
+
   return (
     <div className="min-h-screen bg-background">
       <SiteHeader />
@@ -31,19 +34,17 @@ export default function App() {
               className="h-1.5 w-1.5 rounded-full bg-primary"
               aria-hidden="true"
             />
-            AI for Science · GaliLeo Platform
+            {t("hero.badge")}
           </div>
           <h1 className="font-heading text-3xl font-bold tracking-tight text-balance text-foreground sm:text-4xl">
-            Intelligent resume analysis, powered by ADAM
+            {t("hero.title")}
           </h1>
           <p className="mt-3 leading-relaxed text-pretty text-muted-foreground">
-            Upload a candidate&apos;s resume, automatically extract the details
-            that matter, and match them against a role in seconds — so
-            recruiters can screen faster and focus on the right people.
+            {t("hero.description")}
           </p>
 
           <ul className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
-            {FEATURES.map((f) => (
+            {features.map((f) => (
               <li
                 key={f.title}
                 className="rounded-xl border border-border bg-card p-4"
@@ -65,10 +66,7 @@ export default function App() {
 
       <footer className="border-t border-border/60 py-8">
         <div className="mx-auto max-w-6xl px-4 text-center text-xs text-muted-foreground sm:px-6">
-          <p>
-            Sidereus AI · 星使智算 — bringing scientific computing into a new
-            era.
-          </p>
+          <p>{t("footer.text")}</p>
         </div>
       </footer>
     </div>

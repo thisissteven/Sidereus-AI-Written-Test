@@ -14,6 +14,7 @@ import {
   BarChart3,
 } from "lucide-react"
 import { useAppStore } from "@/lib/use-app-store"
+import { useI18n } from "@/lib/i18n"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -33,6 +34,7 @@ Requirements:
 
 export function ResumeAnalyzer() {
   const store = useAppStore()
+  const { t } = useI18n()
   const [dragging, setDragging] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -68,8 +70,8 @@ export function ResumeAnalyzer() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 font-heading text-base">
-              <ScanLine className="h-4 w-4 text-primary" aria-hidden="true" />1
-              · Upload Resume
+              <ScanLine className="h-4 w-4 text-primary" aria-hidden="true" />
+              {t("upload.title")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -98,10 +100,10 @@ export function ResumeAnalyzer() {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-foreground">
-                    Drop a PDF resume here, or click to browse
+                    {t("upload.dropzone")}
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Single PDF file · max 10 MB · multi-page supported
+                    {t("upload.hint")}
                   </p>
                 </div>
               </button>
@@ -121,12 +123,20 @@ export function ResumeAnalyzer() {
                           className="h-3 w-3 animate-spin"
                           aria-hidden="true"
                         />
-                        {store.loadingMessage || "Processing…"}
+                        {store.loadingMessage || t("upload.processing")}
                       </span>
                     ) : hasParsedText ? (
-                      `${store.pageCount} pages · ${store.parsedText.length.toLocaleString()} characters`
+                      t("upload.pagesChars", {
+                        pages: store.pageCount,
+                        chars: store.parsedText.length.toLocaleString(),
+                      })
                     ) : (
-                      `${(store.selectedFile!.size / (1024 * 1024)).toFixed(2)} MB · ready to upload`
+                      t("upload.readyToUpload", {
+                        size: (
+                          store.selectedFile!.size /
+                          (1024 * 1024)
+                        ).toFixed(2),
+                      })
                     )}
                   </p>
                 </div>
@@ -135,7 +145,7 @@ export function ResumeAnalyzer() {
                   size="icon"
                   onClick={reset}
                   disabled={store.isLoading}
-                  aria-label="Remove file"
+                  aria-label={t("upload.removeFile")}
                 >
                   <X className="h-4 w-4" aria-hidden="true" />
                 </Button>
@@ -154,8 +164,8 @@ export function ResumeAnalyzer() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 font-heading text-base">
-              <Briefcase className="h-4 w-4 text-primary" aria-hidden="true" />2
-              · Job Requirements
+              <Briefcase className="h-4 w-4 text-primary" aria-hidden="true" />
+              {t("jd.title")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -163,11 +173,11 @@ export function ResumeAnalyzer() {
               value={jobDescription}
               onChange={(e) => store.setJobDescription(e.target.value)}
               rows={8}
-              placeholder="Paste the job description here…"
+              placeholder={t("jd.placeholder")}
               className="resize-none text-xs leading-relaxed"
             />
             <p className="text-right text-xs text-muted-foreground">
-              {jobDescription.length} characters
+              {t("jd.charCount", { count: jobDescription.length })}
             </p>
 
             {/* Action buttons */}
@@ -183,12 +193,12 @@ export function ResumeAnalyzer() {
                       className="h-4 w-4 animate-spin"
                       aria-hidden="true"
                     />
-                    {store.loadingMessage || "Processing…"}
+                    {store.loadingMessage || t("upload.processing")}
                   </>
                 ) : (
                   <>
                     <Rocket className="h-4 w-4" aria-hidden="true" />
-                    Full Analysis
+                    {t("jd.fullAnalysis")}
                   </>
                 )}
               </Button>
@@ -198,7 +208,7 @@ export function ResumeAnalyzer() {
                 disabled={!hasFile || store.isLoading}
               >
                 <Upload className="h-4 w-4" aria-hidden="true" />
-                Upload Only
+                {t("jd.uploadOnly")}
               </Button>
               <Button
                 variant="outline"
@@ -206,7 +216,7 @@ export function ResumeAnalyzer() {
                 disabled={!hasParsedText || store.isLoading}
               >
                 <Search className="h-4 w-4" aria-hidden="true" />
-                Extract Info
+                {t("jd.extractInfo")}
               </Button>
               <Button
                 variant="outline"
@@ -215,7 +225,7 @@ export function ResumeAnalyzer() {
                 className="col-span-2"
               >
                 <BarChart3 className="h-4 w-4" aria-hidden="true" />
-                Match Score
+                {t("jd.matchScore")}
               </Button>
             </div>
 
@@ -236,7 +246,7 @@ export function ResumeAnalyzer() {
 
             {!hasFile && (
               <p className="text-center text-xs text-muted-foreground">
-                Upload a resume to enable analysis.
+                {t("jd.uploadToEnable")}
               </p>
             )}
           </CardContent>
@@ -271,6 +281,7 @@ export function ResumeAnalyzer() {
 }
 
 function EmptyState() {
+  const { t } = useI18n()
   return (
     <Card className="flex min-h-[320px] flex-col items-center justify-center border-dashed text-center">
       <CardContent className="flex flex-col items-center gap-3 pt-6">
@@ -279,11 +290,10 @@ function EmptyState() {
         </div>
         <div>
           <p className="font-heading text-sm font-semibold text-foreground">
-            No resume analyzed yet
+            {t("results.emptyTitle")}
           </p>
           <p className="mt-1 max-w-xs text-sm text-muted-foreground">
-            Upload a PDF and ADAM will extract the candidate&apos;s key details,
-            then score them against your role.
+            {t("results.emptyDesc")}
           </p>
         </div>
       </CardContent>
@@ -292,6 +302,7 @@ function EmptyState() {
 }
 
 function ParsingState({ message }: { message?: string }) {
+  const { t } = useI18n()
   return (
     <Card className="min-h-[320px]">
       <CardContent className="flex min-h-[320px] flex-col items-center justify-center gap-4 pt-6 text-center">
@@ -301,10 +312,10 @@ function ParsingState({ message }: { message?: string }) {
         />
         <div>
           <p className="font-heading text-sm font-semibold text-foreground">
-            Analyzing resume
+            {t("results.parsingTitle")}
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
-            {message || "Extracting text, cleaning, and running AI extraction…"}
+            {message || t("results.parsingDesc")}
           </p>
         </div>
       </CardContent>
@@ -319,17 +330,21 @@ function RawTextCard({
   text: string
   pageCount: number
 }) {
+  const { t } = useI18n()
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 font-heading text-base">
           <FileText className="h-4 w-4 text-primary" aria-hidden="true" />
-          Parsed Resume Text
+          {t("raw.title")}
         </CardTitle>
       </CardHeader>
       <CardContent>
         <p className="mb-3 text-xs text-muted-foreground">
-          📄 {pageCount} page(s) · {text.length.toLocaleString()} characters
+          {t("raw.meta", {
+            pages: pageCount,
+            chars: text.length.toLocaleString(),
+          })}
         </p>
         <div className="max-h-[400px] overflow-auto rounded-lg border border-border bg-secondary/30 p-4 text-xs leading-relaxed text-foreground whitespace-pre-wrap font-mono">
           {text}
