@@ -1,4 +1,10 @@
-import { Check, X, Sparkles, TrendingUp, AlertTriangle, Lightbulb } from "lucide-react"
+import {
+  Check,
+  Sparkles,
+  TrendingUp,
+  AlertTriangle,
+  Lightbulb,
+} from "lucide-react"
 import type { MatchResult } from "@/lib/api"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -150,8 +156,7 @@ function DetailList({
   variant: "strength" | "weakness"
 }) {
   const Icon = variant === "strength" ? Check : AlertTriangle
-  const iconTone =
-    variant === "strength" ? "text-chart-3" : "text-chart-5"
+  const iconTone = variant === "strength" ? "text-chart-3" : "text-chart-5"
 
   return (
     <div className="rounded-lg border border-border p-3">
