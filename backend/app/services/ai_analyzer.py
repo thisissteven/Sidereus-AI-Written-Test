@@ -5,7 +5,7 @@ AI-powered resume analysis using the OpenAI SDK against OpenRouter.
 import json
 import logging
 import re
-from typing import Any
+from typing import Any, Optional
 
 import httpx
 from openai import AsyncOpenAI
@@ -16,17 +16,25 @@ from backend.app.models.schemas import ResumeInfo, MatchResult
 logger = logging.getLogger(__name__)
 
 # ── OpenAI-compatible async client (pointed at OpenRouter) ───────────────────
+#
+# The HTTP transport is shared, but the OpenAI client itself is built per
+# request so that an API key supplied by the frontend can be honored. When no
+# key is provided we fall back to the server-side default from settings.
 
 _http_client = httpx.AsyncClient(
     trust_env=False,
     timeout=60.0,
 )
 
-_client = AsyncOpenAI(
-    api_key=settings.AI_API_KEY,
-    base_url=settings.AI_BASE_URL,
-    http_client=_http_client,
-)
+
+def _build_client(api_key: Optional[str] = None) -> AsyncOpenAI:
+    """Return an AsyncOpenAI client using *api_key* or the configured default."""
+    key = (api_key or "").strip() or settings.AI_API_KEY
+    return AsyncOpenAI(
+        api_key=key,
+        base_url=settings.AI_BASE_URL,
+        http_client=_http_client,
+    )
 
 
 # ── JSON extraction helper ──────────────────────────────────────────────────
@@ -148,11 +156,12 @@ _MATCH_SYSTEM = """\
 
 # ── Public API ───────────────────────────────────────────────────────────────
 
-async def extract_resume_info(text: str) -> ResumeInfo:
+async def extract_resume_info(text: str, api_key: Optional[str] = None) -> ResumeInfo:
     """Call the LLM to extract structured information from resume text."""
     logger.info("Requesting AI resume extraction (%d chars)", len(text))
 
-    response = await _client.chat.completions.create(
+    client = _build_client(api_key)
+    response = await client.chat.completions.create(
         model=settings.AI_MODEL,
         messages=[
             {"role": "system", "content": _EXTRACT_SYSTEM},
@@ -173,7 +182,11 @@ async def extract_resume_info(text: str) -> ResumeInfo:
         raise ValueError(f"AI returned unparseable response: {exc}") from exc
 
 
-async def match_resume(resume_text: str, job_description: str) -> MatchResult:
+async def match_resume(
+    resume_text: str,
+    job_description: str,
+    api_key: Optional[str] = None,
+) -> MatchResult:
     """Score how well *resume_text* matches *job_description*."""
     logger.info(
         "Requesting AI match (resume=%d chars, JD=%d chars)",
@@ -186,7 +199,8 @@ async def match_resume(resume_text: str, job_description: str) -> MatchResult:
         f"## 岗位描述（JD）\n\n{job_description}"
     )
 
-    response = await _client.chat.completions.create(
+    client = _build_client(api_key)
+    response = await client.chat.completions.create(
         model=settings.AI_MODEL,
         messages=[
             {"role": "system", "content": _MATCH_SYSTEM},

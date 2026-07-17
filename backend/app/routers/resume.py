@@ -5,7 +5,7 @@ Resume-related API endpoints.
 import logging
 from typing import Optional
 
-from fastapi import APIRouter, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, File, Form, Header, HTTPException, UploadFile
 
 from backend.app.config import settings
 from backend.app.models.schemas import (
@@ -76,14 +76,17 @@ async def upload_resume(file: UploadFile = File(...)):
 # ── POST /extract ───────────────────────────────────────────────────────────
 
 @router.post("/extract", response_model=ResumeInfo)
-async def extract_info(body: dict):
+async def extract_info(
+    body: dict,
+    x_api_key: Optional[str] = Header(default=None, alias="X-API-Key"),
+):
     """Use AI to extract structured info from plain resume text."""
     text: str = body.get("text", "").strip()
     if not text:
         raise HTTPException(status_code=400, detail="'text' field is required and must be non-empty.")
 
     try:
-        info = await extract_resume_info(text)
+        info = await extract_resume_info(text, api_key=x_api_key)
         return info
     except ValueError as exc:
         raise HTTPException(status_code=502, detail=f"AI analysis failed: {exc}")
@@ -95,7 +98,10 @@ async def extract_info(body: dict):
 # ── POST /match ──────────────────────────────────────────────────────────────
 
 @router.post("/match", response_model=MatchResult)
-async def match_job(body: dict):
+async def match_job(
+    body: dict,
+    x_api_key: Optional[str] = Header(default=None, alias="X-API-Key"),
+):
     """Score a resume against a job description using AI."""
     resume_text: str = body.get("resume_text", "").strip()
     job_description: str = body.get("job_description", "").strip()
@@ -106,7 +112,7 @@ async def match_job(body: dict):
         raise HTTPException(status_code=400, detail="'job_description' is required.")
 
     try:
-        result = await match_resume(resume_text, job_description)
+        result = await match_resume(resume_text, job_description, api_key=x_api_key)
         return result
     except ValueError as exc:
         raise HTTPException(status_code=502, detail=f"AI analysis failed: {exc}")
@@ -121,6 +127,7 @@ async def match_job(body: dict):
 async def analyze_resume(
     file: UploadFile = File(...),
     job_description: Optional[str] = Form(None),
+    x_api_key: Optional[str] = Header(default=None, alias="X-API-Key"),
 ):
     """
     Full pipeline: upload PDF ➜ extract structured info ➜ optionally match
@@ -159,7 +166,7 @@ async def analyze_resume(
     # 2. Extract structured resume info via AI
     resume_info: Optional[ResumeInfo] = None
     try:
-        resume_info = await extract_resume_info(text)
+        resume_info = await extract_resume_info(text, api_key=x_api_key)
     except Exception as exc:
         logger.error("Extraction failed during /analyze: %s", exc)
         # Continue — we still return the parsed text even if AI fails
@@ -168,7 +175,9 @@ async def analyze_resume(
     match_result: Optional[MatchResult] = None
     if job_description and job_description.strip():
         try:
-            match_result = await match_resume(text, job_description.strip())
+            match_result = await match_resume(
+                text, job_description.strip(), api_key=x_api_key
+            )
         except Exception as exc:
             logger.error("Matching failed during /analyze: %s", exc)
 
