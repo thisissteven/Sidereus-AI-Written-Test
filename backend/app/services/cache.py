@@ -7,7 +7,7 @@ import threading
 import time
 from typing import Any, Optional
 
-from app.config import settings
+from backend.app.config import settings
 
 
 class InMemoryCache:

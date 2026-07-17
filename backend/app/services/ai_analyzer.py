@@ -10,8 +10,8 @@ from typing import Any
 import httpx
 from openai import AsyncOpenAI
 
-from app.config import settings
-from app.models.schemas import ResumeInfo, MatchResult
+from backend.app.config import settings
+from backend.app.models.schemas import ResumeInfo, MatchResult
 
 logger = logging.getLogger(__name__)
 

@@ -7,16 +7,16 @@ from typing import Optional
 
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 
-from app.config import settings
-from app.models.schemas import (
+from backend.app.config import settings
+from backend.app.models.schemas import (
     AnalyzeResponse,
     MatchResult,
     ResumeInfo,
     ResumeUploadResponse,
 )
-from app.services.cache import cache, md5_hash
-from app.services.pdf_parser import parse_pdf
-from app.services.ai_analyzer import extract_resume_info, match_resume
+from backend.app.services.cache import cache, md5_hash
+from backend.app.services.pdf_parser import parse_pdf
+from backend.app.services.ai_analyzer import extract_resume_info, match_resume
 
 logger = logging.getLogger(__name__)
 

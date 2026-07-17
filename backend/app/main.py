@@ -9,7 +9,7 @@ from typing import AsyncIterator
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers.resume import router as resume_router
+from backend.app.routers.resume import router as resume_router
 
 # ── Logging ──────────────────────────────────────────────────────────────────
 
