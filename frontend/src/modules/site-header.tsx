@@ -1,10 +1,51 @@
+import { useEffect, useState } from "react"
 import { Sparkles, Languages } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { useI18n } from "@/lib/i18n"
+import { checkHealth } from "@/lib/api"
+import { cn } from "@/lib/utils"
+
+type HealthStatus = "checking" | "online" | "offline"
+
+const POLL_INTERVAL_MS = 30_000
 
 export function SiteHeader() {
   const { t, language, toggleLanguage } = useI18n()
+  const [status, setStatus] = useState<HealthStatus>("checking")
+
+  useEffect(() => {
+    let active = true
+    const controller = new AbortController()
+
+    const ping = async () => {
+      const ok = await checkHealth(controller.signal)
+      if (active) setStatus(ok ? "online" : "offline")
+    }
+
+    ping()
+    const id = window.setInterval(ping, POLL_INTERVAL_MS)
+
+    return () => {
+      active = false
+      controller.abort()
+      window.clearInterval(id)
+    }
+  }, [])
+
+  const statusLabel =
+    status === "online"
+      ? t("header.apiOnline")
+      : status === "offline"
+        ? t("header.apiOffline")
+        : t("header.apiChecking")
+
+  const dotClass =
+    status === "online"
+      ? "bg-chart-3"
+      : status === "offline"
+        ? "bg-destructive"
+        : "bg-muted-foreground animate-pulse"
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-md">
@@ -27,12 +68,14 @@ export function SiteHeader() {
           <Badge
             variant="secondary"
             className="hidden gap-1.5 font-mono text-[11px] sm:inline-flex"
+            role="status"
+            aria-live="polite"
           >
             <span
-              className="h-1.5 w-1.5 rounded-full bg-chart-3"
+              className={cn("h-1.5 w-1.5 rounded-full", dotClass)}
               aria-hidden="true"
             />
-            {t("header.apiOnline")}
+            {statusLabel}
           </Badge>
 
           <Button

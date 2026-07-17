@@ -104,6 +104,19 @@ async function handleResponse<T>(res: Response): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+/** Ping the backend health endpoint. Resolves true when the API responds OK. */
+export async function checkHealth(signal?: AbortSignal): Promise<boolean> {
+  try {
+    const res = await fetch(`${BASE_URL}/api/health`, {
+      method: "GET",
+      signal,
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
 /** Upload a PDF and get parsed text back. */
 export async function uploadResume(file: File): Promise<ResumeUploadResponse> {
   const form = new FormData();
