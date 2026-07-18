@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react"
-import { Sparkles, Languages } from "lucide-react"
+import { Sparkles } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { useI18n } from "@/lib/i18n"
 import { checkHealth } from "@/lib/api"
 import { cn } from "@/lib/utils"

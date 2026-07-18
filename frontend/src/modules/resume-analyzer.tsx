@@ -22,8 +22,8 @@ import { CandidateProfileCard } from "./candidate-profile"
 import { MatchResults } from "./match-results"
 import { cn } from "@/lib/utils"
 
-// Import your custom animated primitives
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { AnimatePresence, motion } from "motion/react"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 const SAMPLE_JD = `Python Backend / Full-Stack Intern
 
@@ -270,13 +270,13 @@ export function ResumeAnalyzer() {
             onValueChange={(val) => val && setActiveTab(val)}
             className="w-full space-y-2"
           >
-            {/* Functional Primitives list automatically managing tab state widths */}
             {hasResults && (
               <TabsList className="w-full justify-start">
                 <TabsTrigger value="profile" disabled={!store.resumeInfo}>
                   <Briefcase className="h-4 w-4" />
                   {t("jd.extractInfo") || "Profile"}
                 </TabsTrigger>
+
                 <TabsTrigger value="match" disabled={!store.matchResult}>
                   <ScanLine className="h-4 w-4" />
                   {t("jd.matchScore") || "Match Analysis"}
@@ -284,18 +284,38 @@ export function ResumeAnalyzer() {
               </TabsList>
             )}
 
-            {/* Hardware-accelerated sliding panels */}
-            <TabsContent value="profile">
-              {store.resumeInfo && (
-                <CandidateProfileCard resumeInfo={store.resumeInfo} />
+            <AnimatePresence mode="wait">
+              {activeTab === "profile" && store.resumeInfo && (
+                <motion.div
+                  key="profile"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{
+                    duration: 0.25,
+                    ease: "easeOut",
+                  }}
+                >
+                  <CandidateProfileCard resumeInfo={store.resumeInfo} />
+                </motion.div>
               )}
-            </TabsContent>
 
-            <TabsContent value="match">
-              {store.matchResult && <MatchResults match={store.matchResult} />}
-            </TabsContent>
+              {activeTab === "match" && store.matchResult && (
+                <motion.div
+                  key="match"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{
+                    duration: 0.25,
+                    ease: "easeOut",
+                  }}
+                >
+                  <MatchResults match={store.matchResult} />
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-            {/* Raw parsed text fallback layout block */}
             {hasParsedText && !store.resumeInfo && !store.matchResult && (
               <RawTextCard
                 text={store.parsedText}
@@ -312,7 +332,7 @@ export function ResumeAnalyzer() {
 function EmptyState() {
   const { t } = useI18n()
   return (
-    <Card className="flex min-h-[320px] flex-col items-center justify-center border-dashed text-center">
+    <Card className="flex min-h-80 flex-col items-center justify-center border-dashed text-center">
       <CardContent className="flex flex-col items-center gap-3 pt-6">
         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-secondary text-muted-foreground">
           <FileText className="h-6 w-6" aria-hidden="true" />
@@ -369,7 +389,7 @@ function RawTextCard({ text, pageCount }: { text: string; pageCount: number }) {
             chars: text.length.toLocaleString(),
           })}
         </p>
-        <div className="max-h-[400px] overflow-auto rounded-lg border border-border bg-secondary/30 p-4 text-xs leading-relaxed whitespace-pre-wrap text-foreground">
+        <div className="max-h-100 overflow-auto rounded-lg border border-border bg-secondary/30 p-4 text-xs leading-relaxed whitespace-pre-wrap text-foreground">
           {text}
         </div>
       </CardContent>
