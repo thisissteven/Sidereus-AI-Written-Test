@@ -17,7 +17,7 @@ resume-checker/
 │   │   └── services/
 │   │       ├── pdf_parser.py    # PDF text extraction
 │   │       ├── ai_analyzer.py   # AI-powered analysis
-│   │       └── cache.py         # In-memory caching
+│   │       └── cache.py         # Redis caching
 │   └── requirements.txt
 ├── frontend/                # React + Vite frontend
 │   ├── src/
@@ -34,19 +34,19 @@ resume-checker/
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
 | **Frontend** | React + TypeScript + Vite | SPA framework |
-| **UI Library** | shadcn/ui + Tailwind CSS v4 |
+| **UI Library** | shadcn/ui + Tailwind CSS v4 | Clean UI |
 | **Animations** | Framer Motion | Smooth micro-animations |
 | **Backend** | FastAPI (Python) | REST API server |
 | **PDF Parsing** | PyMuPDF | Extract text from PDF resumes |
-| **AI Engine** | ChatAnywhere API (Deepseek-v4-Pro) | Resume analysis & scoring |
-| **Caching** | In-memory (Redis-compatible interface) | Avoid redundant AI calls |
+| **AI Engine** | Gemini API (gemini-flash-latest) | Resume analysis & scoring |
+| **Caching** | Upstash Redis (Serverless) | Avoid redundant AI calls |
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 - Python 3.11+
 - Node.js 18+
-- ChatAnywhere API key
+- Gemini API key
 
 ### Backend Setup
 
@@ -135,9 +135,10 @@ Environment variables (currently set in `config.py`):
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `AI_API_KEY` | — | ChatAnywhere API key |
+| `AI_API_KEY` | — | Gemini API key |
 | `AI_BASE_URL` | `https://api.chatanywhere.tech/v1` | AI provider base URL |
 | `AI_MODEL` | `deepseek-v4-pro` | Model to use |
+| `REDIS_URL` | — | Redis connection string |
 | `CACHE_TTL` | `3600` | Cache TTL in seconds |
 | `MAX_FILE_SIZE` | `10485760` | Max upload size (bytes) |
 
@@ -163,7 +164,7 @@ The backend remains compatible with ASGI through the Vercel Python runtime, allo
 
 ```bash
 cd frontend
-npm run build
+pnpm run build
 # Upload dist/ to your hosting platform
 ```
 
