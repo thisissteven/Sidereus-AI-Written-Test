@@ -158,7 +158,7 @@ async def extract_resume_info(text: str) -> ResumeInfo:
             {"role": "system", "content": _EXTRACT_SYSTEM},
             {"role": "user", "content": f"以下是简历内容：\n\n{text}"},
         ],
-        temperature=0.1,
+        temperature=0,
         max_tokens=4096,
     )
 
