@@ -1,23 +1,59 @@
+import * as React from "react"
 import { Tabs as TabsPrimitive } from "@base-ui/react/tabs"
 import { cva, type VariantProps } from "class-variance-authority"
+import { motion, AnimatePresence } from "motion/react"
 
 import { cn } from "@/lib/utils"
+
+// Create a context to track the current active tab and panel directions
+const TabsContext = React.createContext<{
+  value: string | number | null
+  previousValue: string | number | null
+} | null>(null)
 
 function Tabs({
   className,
   orientation = "horizontal",
+  value: controlledValue,
+  defaultValue,
+  onValueChange,
+  children,
   ...props
 }: TabsPrimitive.Root.Props) {
+  const [localValue, setLocalValue] = React.useState(
+    controlledValue ?? defaultValue ?? null
+  )
+  const prevValueRef = React.useRef<string | number | null>(null)
+
+  const activeValue =
+    controlledValue !== undefined ? controlledValue : localValue
+
+  const handleValueChange = (nextValue: string | number | null) => {
+    prevValueRef.current = activeValue
+    if (controlledValue === undefined) {
+      setLocalValue(nextValue)
+    }
+    onValueChange?.(nextValue)
+  }
+
   return (
-    <TabsPrimitive.Root
-      data-slot="tabs"
-      data-orientation={orientation}
-      className={cn(
-        "group/tabs flex gap-2 data-horizontal:flex-col",
-        className
-      )}
-      {...props}
-    />
+    <TabsContext.Provider
+      value={{ value: activeValue, previousValue: prevValueRef.current }}
+    >
+      <TabsPrimitive.Root
+        data-slot="tabs"
+        orientation={orientation}
+        value={activeValue}
+        onValueChange={handleValueChange}
+        className={cn(
+          "group/tabs flex gap-2 data-horizontal:flex-col",
+          className
+        )}
+        {...props}
+      >
+        {children}
+      </TabsPrimitive.Root>
+    </TabsContext.Provider>
   )
 }
 
@@ -67,13 +103,43 @@ function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
   )
 }
 
-function TabsContent({ className, ...props }: TabsPrimitive.Panel.Props) {
+function TabsContent({
+  className,
+  value,
+  children,
+  ...props
+}: TabsPrimitive.Panel.Props) {
+  const context = React.useContext(TabsContext)
+  if (!context) return null
+
+  const isActive = context.value === value
+
+  // Simple numeric comparison fallback for slide direction tracking
+  const isForward = Number(value) > Number(context.previousValue ?? 0)
+  const slideDistance = isForward ? 24 : -24
+
   return (
-    <TabsPrimitive.Panel
-      data-slot="tabs-content"
-      className={cn("flex-1 text-sm outline-none", className)}
-      {...props}
-    />
+    <AnimatePresence mode="popLayout" initial={false}>
+      {isActive && (
+        <TabsPrimitive.Panel
+          key={String(value)}
+          value={value}
+          data-slot="tabs-content"
+          className={cn("w-full flex-1 text-sm outline-none", className)}
+          asChild
+          {...props}
+        >
+          <motion.div
+            initial={{ opacity: 0, x: slideDistance }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -slideDistance }}
+            transition={{ type: "spring", stiffness: 400, damping: 38 }}
+          >
+            {children}
+          </motion.div>
+        </TabsPrimitive.Panel>
+      )}
+    </AnimatePresence>
   )
 }
 

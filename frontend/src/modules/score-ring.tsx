@@ -1,3 +1,6 @@
+"use client"
+
+import { useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
 
 interface ScoreRingProps {
@@ -15,16 +18,37 @@ export function ScoreRing({
   label,
   className,
 }: ScoreRingProps) {
+  const [isMounted, setIsMounted] = useState(false)
+
   const radius = (size - strokeWidth) / 2
   const circumference = 2 * Math.PI * radius
-  const offset = circumference - (Math.min(100, Math.max(0, value)) / 100) * circumference
+
+  // Guard values between 0 and 100
+  const cleanValue = Math.min(100, Math.max(0, value))
+  const targetOffset = circumference - (cleanValue / 100) * circumference
+
+  // Initial offset is full circumference (0% visible) until mounted
+  const animatedOffset = isMounted ? targetOffset : circumference
+
+  useEffect(() => {
+    // A microtask timeout ensures the DOM renders the initial 0% position first
+    const timer = setTimeout(() => setIsMounted(true), 50)
+    return () => clearTimeout(timer)
+  }, [])
 
   const tone =
-    value >= 75 ? "text-chart-3" : value >= 50 ? "text-accent" : "text-chart-5"
+    value >= 75
+      ? "text-blue-400"
+      : value >= 50
+        ? "text-blue-500"
+        : "text-blue-600"
 
   return (
     <div
-      className={cn("relative inline-flex items-center justify-center", className)}
+      className={cn(
+        "relative inline-flex items-center justify-center",
+        className
+      )}
       style={{ width: size, height: size }}
     >
       <svg width={size} height={size} className="-rotate-90">
@@ -44,17 +68,22 @@ export function ScoreRing({
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeDasharray={circumference}
-          strokeDashoffset={offset}
-          className={cn("transition-[stroke-dashoffset] duration-700 ease-out", tone)}
+          strokeDashoffset={animatedOffset}
+          className={cn(
+            "transition-[stroke-dashoffset] duration-1000 ease-out",
+            tone
+          )}
           style={{ stroke: "currentColor" }}
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="font-heading text-3xl font-bold tabular-nums text-foreground">
+        <span className="font-heading text-3xl font-bold text-foreground tabular-nums">
           {value}
         </span>
         {label ? (
-          <span className="text-xs font-medium text-muted-foreground">{label}</span>
+          <span className="text-xs font-medium text-muted-foreground">
+            {label}
+          </span>
         ) : null}
       </div>
     </div>

@@ -22,6 +22,7 @@ resume-checker/
 ├── frontend/                # React + Vite frontend
 │   ├── src/
 │   │   ├── components/      # UI components
+│   │   ├── modules/         # Group components together
 │   │   ├── lib/             # API client & utilities
 │   │   └── App.tsx          # Main application
 │   └── package.json
@@ -33,11 +34,11 @@ resume-checker/
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
 | **Frontend** | React + TypeScript + Vite | SPA framework |
-| **UI Library** | shadcn/ui + Tailwind CSS v4 | Premium component library |
+| **UI Library** | shadcn/ui + Tailwind CSS v4 |
 | **Animations** | Framer Motion | Smooth micro-animations |
 | **Backend** | FastAPI (Python) | REST API server |
 | **PDF Parsing** | PyMuPDF | Extract text from PDF resumes |
-| **AI Engine** | OpenRouter API (Gemini 2.5 Flash) | Resume analysis & scoring |
+| **AI Engine** | ChatAnywhere API (Deepseek-v4-Pro) | Resume analysis & scoring |
 | **Caching** | In-memory (Redis-compatible interface) | Avoid redundant AI calls |
 
 ## 🚀 Quick Start
@@ -45,14 +46,14 @@ resume-checker/
 ### Prerequisites
 - Python 3.11+
 - Node.js 18+
-- OpenRouter API key (or any OpenAI-compatible provider)
+- ChatAnywhere API key
 
 ### Backend Setup
 
 ```bash
-cd backend
+source .venv/Scripts/activate
 pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
+uvicorn backend.app.main:app --reload --port 8000
 ```
 
 The API will be available at `http://localhost:8000`. Interactive docs at `http://localhost:8000/docs`.
@@ -61,8 +62,8 @@ The API will be available at `http://localhost:8000`. Interactive docs at `http:
 
 ```bash
 cd frontend
-npm install
-npm run dev
+pnpm install
+pnpm run dev
 ```
 
 The frontend will be available at `http://localhost:5173`.
@@ -130,26 +131,33 @@ curl -X POST http://localhost:8000/api/resume/analyze \
 
 ## ⚙️ Configuration
 
-Environment variables (or set in `.env`):
+Environment variables (currently set in `config.py`):
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `AI_API_KEY` | — | OpenRouter API key |
-| `AI_BASE_URL` | `https://openrouter.ai/api/v1` | AI provider base URL |
-| `AI_MODEL` | `google/gemini-2.5-flash` | Model to use |
+| `AI_API_KEY` | — | ChatAnywhere API key |
+| `AI_BASE_URL` | `https://api.chatanywhere.tech/v1` | AI provider base URL |
+| `AI_MODEL` | `deepseek-v4-pro` | Model to use |
 | `CACHE_TTL` | `3600` | Cache TTL in seconds |
 | `MAX_FILE_SIZE` | `10485760` | Max upload size (bytes) |
 
 ## ☁️ Deployment
 
-### Alibaba Cloud Function Compute (FC)
+### Vercel Serverless Functions
 
-The backend is structured as a standard ASGI application compatible with Alibaba Cloud FC:
+The backend is structured as a standard ASGI application compatible with Vercel Serverless Functions:
 
-1. Package the `backend/` directory
-2. Set the handler to `app.main.app`
-3. Configure environment variables in the FC console
-4. Set HTTP trigger with custom domain
+1. Deploy the project repository to Vercel
+2. Configure the Python runtime and API entrypoint using `api/index.py`
+3. Set environment variables in the Vercel project settings:
+   - `AI_API_KEY`
+   - `REDIS_URL`
+   - Other required backend configuration variables
+4. Configure the build and deployment settings
+5. Vercel will automatically deploy the FastAPI backend as serverless API routes
+
+The backend remains compatible with ASGI through the Vercel Python runtime, allowing FastAPI routes to be served under the `/api` path.
+
 
 ### Frontend (GitHub Pages / Vercel / OSS)
 

@@ -1,75 +1,92 @@
 """
-Thread-safe in-memory cache with per-entry TTL.
+Redis cache using Upstash Redis with TTL support.
 """
 
 import hashlib
-import threading
-import time
+import json
 from typing import Any, Optional
+
+import redis
 
 from backend.app.config import settings
 
 
-class InMemoryCache:
-    """Simple dict-backed cache with optional TTL per entry."""
+class RedisCache:
+    """Redis-backed cache with JSON serialization."""
 
     def __init__(self, default_ttl: int = 3600) -> None:
-        self._store: dict[str, tuple[Any, float]] = {}
-        self._lock = threading.Lock()
         self._default_ttl = default_ttl
 
-    # ── public API ───────────────────────────────────────────────────────
+        self._client = redis.Redis.from_url(
+            settings.REDIS_URL,
+            decode_responses=True,
+        )
+
+    # ── public API ────────────────────────────────────────────────
 
     def get(self, key: str) -> Optional[Any]:
-        """Return cached value or *None* if missing / expired."""
-        with self._lock:
-            entry = self._store.get(key)
-            if entry is None:
-                return None
-            value, expiry = entry
-            if expiry and time.time() > expiry:
-                del self._store[key]
-                return None
+        """Return cached value or None if missing/expired."""
+
+        value = self._client.get(key)
+
+        if value is None:
+            return None
+
+        try:
+            return json.loads(value)
+        except json.JSONDecodeError:
             return value
 
-    def set(self, key: str, value: Any, ttl: Optional[int] = None) -> None:
-        """Store *value* under *key*.  Uses default TTL when *ttl* is None."""
-        effective_ttl = ttl if ttl is not None else self._default_ttl
-        expiry = time.time() + effective_ttl if effective_ttl > 0 else 0.0
-        with self._lock:
-            self._store[key] = (value, expiry)
+    def set(
+        self,
+        key: str,
+        value: Any,
+        ttl: Optional[int] = None,
+    ) -> None:
+        """Store value with TTL."""
+
+        effective_ttl = (
+            ttl
+            if ttl is not None
+            else self._default_ttl
+        )
+
+        self._client.set(
+            key,
+            json.dumps(value),
+            ex=effective_ttl,
+        )
 
     def delete(self, key: str) -> bool:
-        """Remove an entry.  Returns True if it existed."""
-        with self._lock:
-            return self._store.pop(key, None) is not None
+        """Delete cache entry."""
+
+        return self._client.delete(key) > 0
 
     def clear(self) -> None:
-        """Drop every entry."""
-        with self._lock:
-            self._store.clear()
+        """Clear all cache."""
 
-    def cleanup(self) -> int:
-        """Evict all expired entries.  Returns how many were removed."""
-        now = time.time()
-        removed = 0
-        with self._lock:
-            expired_keys = [
-                k for k, (_, expiry) in self._store.items()
-                if expiry and now > expiry
-            ]
-            for k in expired_keys:
-                del self._store[k]
-                removed += 1
-        return removed
+        self._client.flushdb()
 
 
-# ── helpers ──────────────────────────────────────────────────────────────────
+# ── helpers ──────────────────────────────────────────────────────
+
 
 def md5_hash(data: bytes) -> str:
-    """Return the hex MD5 digest of *data* (useful as cache key for files)."""
+    """Hash binary data (PDF files)."""
+
     return hashlib.md5(data).hexdigest()
 
 
-# Singleton used throughout the app
-cache = InMemoryCache(default_ttl=settings.CACHE_TTL)
+def text_hash(data: str) -> str:
+    """Hash text content."""
+
+    return hashlib.md5(
+        data.encode("utf-8")
+    ).hexdigest()
+
+
+# ── singleton ────────────────────────────────────────────────────
+
+cache = RedisCache(
+    default_ttl=settings.CACHE_TTL
+)

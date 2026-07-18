@@ -67,7 +67,7 @@ export function SiteHeader() {
         <div className="flex items-center gap-2 sm:gap-3">
           <Badge
             variant="secondary"
-            className="hidden gap-1.5 font-mono text-[11px] sm:inline-flex"
+            className="hidden gap-1.5 text-[11px] sm:inline-flex"
             role="status"
             aria-live="polite"
           >
@@ -78,27 +78,31 @@ export function SiteHeader() {
             {statusLabel}
           </Badge>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={toggleLanguage}
-            className="gap-1.5"
-            aria-label={
-              language === "en"
-                ? t("header.switchToChinese")
-                : t("header.switchToEnglish")
-            }
-            title={
-              language === "en"
-                ? t("header.switchToChinese")
-                : t("header.switchToEnglish")
-            }
-          >
-            <Languages className="h-4 w-4" aria-hidden="true" />
-            <span className="font-medium tabular-nums">
-              {language === "en" ? "EN" : "中文"}
-            </span>
-          </Button>
+          <div className="flex items-center rounded-lg bg-muted p-1">
+            <button
+              onClick={toggleLanguage}
+              className={cn(
+                "rounded-md px-2 py-1 text-xs font-medium transition",
+                language === "en"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground"
+              )}
+            >
+              EN
+            </button>
+
+            <button
+              onClick={toggleLanguage}
+              className={cn(
+                "rounded-md px-2 py-1 text-xs font-medium transition",
+                language === "zh"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground"
+              )}
+            >
+              中文
+            </button>
+          </div>
         </div>
       </div>
     </header>

@@ -9,9 +9,10 @@ import type { MatchResult } from "@/lib/api"
 import { useI18n } from "@/lib/i18n"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
+
 import { ScoreRing } from "./score-ring"
 import { cn } from "@/lib/utils"
+import { DimensionBar } from "./dimension-bar"
 
 function hasText(value?: string | null): value is string {
   return typeof value === "string" && value.trim().length > 0
@@ -21,7 +22,8 @@ export function MatchResults({ match }: { match: MatchResult }) {
   const { t } = useI18n()
 
   const score =
-    typeof match.overall_score === "number" && !Number.isNaN(match.overall_score)
+    typeof match.overall_score === "number" &&
+    !Number.isNaN(match.overall_score)
       ? match.overall_score
       : 0
 
@@ -36,10 +38,10 @@ export function MatchResults({ match }: { match: MatchResult }) {
 
   const toneClass =
     tone === "strong"
-      ? "bg-chart-3/15 text-chart-3"
+      ? "bg-chart-3/15 text-blue-400"
       : tone === "moderate"
         ? "bg-accent/15 text-accent-foreground"
-        : "bg-chart-5/15 text-chart-5"
+        : "bg-chart-5/15 text-blue-400"
 
   const dimensions = (match.dimensions ?? []).filter((d) => hasText(d?.name))
   const strengths = (match.strengths ?? []).filter((s) => hasText(s))
@@ -113,7 +115,7 @@ export function MatchResults({ match }: { match: MatchResult }) {
                   className="flex items-start gap-2 text-sm text-foreground"
                 >
                   <Sparkles
-                    className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary"
+                    className="mt-0.5 h-3.5 w-3.5 shrink-0 text-blue-500"
                     aria-hidden="true"
                   />
                   <span className="text-xs leading-relaxed">{suggestion}</span>
@@ -130,11 +132,11 @@ export function MatchResults({ match }: { match: MatchResult }) {
         {/* Summary */}
         <div className="flex gap-3 rounded-lg border border-primary/20 bg-primary/5 p-4">
           <Sparkles
-            className="mt-0.5 h-4 w-4 shrink-0 text-primary"
+            className="mt-0.5 h-4 w-4 shrink-0 text-blue-500"
             aria-hidden="true"
           />
           <div>
-            <p className="text-xs font-semibold text-primary">
+            <p className="text-xs font-semibold text-blue-500">
               {t("match.aiAssessment")}
             </p>
             <p className="mt-1 text-sm leading-relaxed text-foreground">
@@ -144,31 +146,6 @@ export function MatchResults({ match }: { match: MatchResult }) {
         </div>
       </CardContent>
     </Card>
-  )
-}
-
-function DimensionBar({
-  label,
-  value,
-  comment,
-}: {
-  label: string
-  value: number
-  comment?: string
-}) {
-  return (
-    <div>
-      <div className="mb-1.5 flex items-center justify-between text-sm">
-        <span className="font-medium text-foreground">{label}</span>
-        <span className="font-mono text-muted-foreground tabular-nums">
-          {value}%
-        </span>
-      </div>
-      <Progress value={value} />
-      {comment && comment.trim().length > 0 && (
-        <p className="mt-1 text-xs text-muted-foreground">{comment}</p>
-      )}
-    </div>
   )
 }
 
@@ -184,7 +161,7 @@ function DetailList({
   variant: "strength" | "weakness"
 }) {
   const Icon = variant === "strength" ? Check : AlertTriangle
-  const iconTone = variant === "strength" ? "text-chart-3" : "text-chart-5"
+  const iconTone = variant === "strength" ? "text-blue-500" : "text-blue-500"
 
   return (
     <div className="rounded-lg border border-border p-3">

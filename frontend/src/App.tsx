@@ -25,13 +25,13 @@ export default function App() {
   ]
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-square min-h-screen">
       <SiteHeader />
       <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-12">
         <section className="mb-10 max-w-2xl">
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-border bg-secondary/50 px-3 py-1 text-xs font-medium text-muted-foreground">
             <span
-              className="h-1.5 w-1.5 rounded-full bg-primary"
+              className="h-1.5 w-1.5 rounded-full bg-blue-500"
               aria-hidden="true"
             />
             {t("hero.badge")}
@@ -49,7 +49,7 @@ export default function App() {
                 key={f.title}
                 className="rounded-xl border border-border bg-card p-4"
               >
-                <f.icon className="h-5 w-5 text-primary" aria-hidden="true" />
+                <f.icon className="h-5 w-5 text-blue-500" aria-hidden="true" />
                 <p className="mt-2 text-sm font-semibold text-foreground">
                   {f.title}
                 </p>

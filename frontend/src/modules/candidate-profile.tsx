@@ -52,11 +52,9 @@ function Field({
           ) : null}
         </p>
         {filled ? (
-          <p className="truncate text-sm font-medium text-foreground">
-            {value}
-          </p>
+          <p className="text-sm font-medium text-foreground">{value}</p>
         ) : (
-          <p className="truncate text-sm font-medium text-muted-foreground/60 italic">
+          <p className="text-sm font-medium text-muted-foreground/60 italic">
             {t("profile.notProvided")}
           </p>
         )}
@@ -137,7 +135,7 @@ export function CandidateProfileCard({
         <CardTitle className="font-heading text-base">
           {t("profile.title")}
         </CardTitle>
-        <Badge variant="secondary" className="font-mono text-[11px]">
+        <Badge variant="secondary" className="text-[11px]">
           {t("profile.aiExtracted")}
         </Badge>
       </CardHeader>
@@ -156,9 +154,6 @@ export function CandidateProfileCard({
           <>
             {/* Basic Info — always shown so missing fields are explicit */}
             <div>
-              <SectionHeading icon={User}>
-                {t("profile.section.basic")}
-              </SectionHeading>
               {hasBasic ? (
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <Field
@@ -183,7 +178,12 @@ export function CandidateProfileCard({
                   />
                 </div>
               ) : (
-                <EmptyNote>{t("profile.empty.basic")}</EmptyNote>
+                <>
+                  <SectionHeading icon={User}>
+                    {t("profile.section.basic")}
+                  </SectionHeading>
+                  <EmptyNote>{t("profile.empty.basic")}</EmptyNote>
+                </>
               )}
             </div>
 
@@ -233,7 +233,7 @@ export function CandidateProfileCard({
                       <Badge
                         key={skill}
                         variant="outline"
-                        className="font-mono text-[11px]"
+                        className="text-[11px]"
                       >
                         {skill}
                       </Badge>
@@ -337,7 +337,7 @@ export function CandidateProfileCard({
                         </p>
                       </div>
                       {hasText(work.position) && (
-                        <p className="mt-1 text-xs font-medium text-primary/80">
+                        <p className="mt-1 text-xs font-medium text-blue-500">
                           {work.position}
                         </p>
                       )}
@@ -373,7 +373,7 @@ export function CandidateProfileCard({
                           : t("profile.unknownProject")}
                       </p>
                       {hasText(proj.role) && (
-                        <p className="mt-1 text-xs font-medium text-primary/80">
+                        <p className="mt-1 text-xs font-medium text-blue-500">
                           {proj.role}
                         </p>
                       )}
@@ -392,7 +392,7 @@ export function CandidateProfileCard({
                                 <Badge
                                   key={tech}
                                   variant="outline"
-                                  className="font-mono text-[10px]"
+                                  className="text-[10px]"
                                 >
                                   {tech}
                                 </Badge>

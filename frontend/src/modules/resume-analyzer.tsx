@@ -22,6 +22,9 @@ import { CandidateProfileCard } from "./candidate-profile"
 import { MatchResults } from "./match-results"
 import { cn } from "@/lib/utils"
 
+// Import your custom animated primitives
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+
 const SAMPLE_JD = `Python Backend / Full-Stack Intern
 
 We are looking for a Python backend intern to build RESTful APIs on Serverless (Aliyun Function Compute). Responsibilities include PDF parsing, AI-based information extraction, and a Redis caching layer.
@@ -38,6 +41,9 @@ export function ResumeAnalyzer() {
   const [dragging, setDragging] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
+  // Tab state: "profile" | "match"
+  const [activeTab, setActiveTab] = useState<string>("profile")
+
   // Use the store's JD state, falling back to sample if empty
   const jobDescription = store.jobDescription || SAMPLE_JD
 
@@ -46,12 +52,13 @@ export function ResumeAnalyzer() {
       if (!selected) return
       store.setFile(selected)
     },
-    [store],
+    [store]
   )
 
   const reset = () => {
     store.clearFile()
     if (inputRef.current) inputRef.current.value = ""
+    setActiveTab("profile") // Reset tab state
   }
 
   const hasFile = !!store.selectedFile
@@ -70,7 +77,6 @@ export function ResumeAnalyzer() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 font-heading text-base">
-              <ScanLine className="h-4 w-4 text-primary" aria-hidden="true" />
               {t("upload.title")}
             </CardTitle>
           </CardHeader>
@@ -92,10 +98,10 @@ export function ResumeAnalyzer() {
                 className={cn(
                   "flex w-full flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-border bg-secondary/30 px-6 py-10 text-center transition-colors",
                   "hover:border-primary/50 hover:bg-secondary/60",
-                  dragging && "border-primary bg-primary/5",
+                  dragging && "border-primary bg-primary/5"
                 )}
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
                   <UploadCloud className="h-6 w-6" aria-hidden="true" />
                 </div>
                 <div>
@@ -109,7 +115,7 @@ export function ResumeAnalyzer() {
               </button>
             ) : (
               <div className="flex items-center gap-3 rounded-xl border border-border bg-secondary/40 p-4">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
                   <FileText className="h-5 w-5" aria-hidden="true" />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -164,7 +170,6 @@ export function ResumeAnalyzer() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 font-heading text-base">
-              <Briefcase className="h-4 w-4 text-primary" aria-hidden="true" />
               {t("jd.title")}
             </CardTitle>
           </CardHeader>
@@ -238,7 +243,7 @@ export function ResumeAnalyzer() {
                     style={{ width: `${store.progressPercent}%` }}
                   />
                 </div>
-                <p className="text-center text-xs text-muted-foreground">
+                <p className="center text-xs text-muted-foreground">
                   {store.loadingMessage}
                 </p>
               </div>
@@ -260,20 +265,44 @@ export function ResumeAnalyzer() {
         ) : store.isLoading && !hasResults ? (
           <ParsingState message={store.loadingMessage} />
         ) : (
-          <>
-            {store.resumeInfo && (
-              <CandidateProfileCard resumeInfo={store.resumeInfo} />
+          <Tabs
+            value={activeTab}
+            onValueChange={(val) => val && setActiveTab(val)}
+            className="w-full space-y-2"
+          >
+            {/* Functional Primitives list automatically managing tab state widths */}
+            {hasResults && (
+              <TabsList className="w-full justify-start">
+                <TabsTrigger value="profile" disabled={!store.resumeInfo}>
+                  <Briefcase className="h-4 w-4" />
+                  {t("jd.extractInfo") || "Profile"}
+                </TabsTrigger>
+                <TabsTrigger value="match" disabled={!store.matchResult}>
+                  <ScanLine className="h-4 w-4" />
+                  {t("jd.matchScore") || "Match Analysis"}
+                </TabsTrigger>
+              </TabsList>
             )}
-            {store.matchResult && (
-              <MatchResults match={store.matchResult} />
-            )}
+
+            {/* Hardware-accelerated sliding panels */}
+            <TabsContent value="profile">
+              {store.resumeInfo && (
+                <CandidateProfileCard resumeInfo={store.resumeInfo} />
+              )}
+            </TabsContent>
+
+            <TabsContent value="match">
+              {store.matchResult && <MatchResults match={store.matchResult} />}
+            </TabsContent>
+
+            {/* Raw parsed text fallback layout block */}
             {hasParsedText && !store.resumeInfo && !store.matchResult && (
               <RawTextCard
                 text={store.parsedText}
                 pageCount={store.pageCount}
               />
             )}
-          </>
+          </Tabs>
         )}
       </div>
     </div>
@@ -304,8 +333,8 @@ function EmptyState() {
 function ParsingState({ message }: { message?: string }) {
   const { t } = useI18n()
   return (
-    <Card className="min-h-[320px]">
-      <CardContent className="flex min-h-[320px] flex-col items-center justify-center gap-4 pt-6 text-center">
+    <Card className="min-h-80">
+      <CardContent className="flex min-h-80 flex-col items-center justify-center gap-4 pt-6 text-center">
         <Loader2
           className="h-8 w-8 animate-spin text-primary"
           aria-hidden="true"
@@ -323,13 +352,7 @@ function ParsingState({ message }: { message?: string }) {
   )
 }
 
-function RawTextCard({
-  text,
-  pageCount,
-}: {
-  text: string
-  pageCount: number
-}) {
+function RawTextCard({ text, pageCount }: { text: string; pageCount: number }) {
   const { t } = useI18n()
   return (
     <Card>
@@ -339,14 +362,14 @@ function RawTextCard({
           {t("raw.title")}
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="scheme-light dark:scheme-dark">
         <p className="mb-3 text-xs text-muted-foreground">
           {t("raw.meta", {
             pages: pageCount,
             chars: text.length.toLocaleString(),
           })}
         </p>
-        <div className="max-h-[400px] overflow-auto rounded-lg border border-border bg-secondary/30 p-4 text-xs leading-relaxed text-foreground whitespace-pre-wrap font-mono">
+        <div className="max-h-[400px] overflow-auto rounded-lg border border-border bg-secondary/30 p-4 text-xs leading-relaxed whitespace-pre-wrap text-foreground">
           {text}
         </div>
       </CardContent>
