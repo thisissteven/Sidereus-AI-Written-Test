@@ -172,9 +172,17 @@
   content: "";
   position: fixed;
   inset: 0;
+  pointer-events: none;
+
+  background-image:
+    linear-gradient(var(--color-zinc-100) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-zinc-100) 1px, transparent 1px);
+
+  background-size: 88px 88px;
+}
+
+.dark .bg-square::before {
   background-image:
     linear-gradient(var(--color-zinc-900) 1px, transparent 1px),
     linear-gradient(90deg, var(--color-zinc-900) 1px, transparent 1px);
-  background-size: 88px 88px;
-  pointer-events: none;
 }
